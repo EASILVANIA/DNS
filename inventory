@@ -1,0 +1,19 @@
+[control]
+CentOS ansible_connection=local
+
+[control:vars]
+ansible_sudo_pass=test123
+ansible_become_method=sudo
+
+[dnsserver]
+192.168.80.5
+
+[dnsserver:vars]
+ansible_user=Administrator
+ansible_become_user=Administrator
+ansible_password=P@ssw0rd121618
+ansible_connection=ssh
+ansible_shell_type=cmd
+ansible_ssh_common_args=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+ansible_ssh_retries=3
+ansible_become_method=runas

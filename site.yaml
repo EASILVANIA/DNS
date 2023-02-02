@@ -1,0 +1,92 @@
+---
+- name: displaying csv file
+  hosts: all
+  become: true
+  tasks:
+
+    - name: including variable
+      include_vars: files/key.yml
+      no_log: true
+
+    - name: testing csv module
+      community.general.read_csv:
+        path: files/server_ip.csv
+      register: server_list
+      delegate_to: localhost
+  
+    # - name: Add AD/DNS Server to in-memory inventory
+    #   add_host:
+    #     host: "{{ item.IP_add}}"
+    #     group: webserver
+    #     ansible_connection: ssh
+    #     ansible_port: 22
+    #     ansible_winrm_transport: ntlm
+    #     ansible_user: "{{ dev_user }}"
+    #     ansible_sudo_pass: "{{ dev_pass }}"
+    #     ansible_winrm_server_cert_validation: ignore
+    #     no_log: true
+    #   loop: "{{ server_list.list }}"
+
+- name: webserver test connection
+  hosts: dnsserver
+  # become: true
+  gather_facts: false
+  ignore_unreachable: yes
+  tasks:
+#
+    # - name: Wait for the VM to become available
+    #   block:
+    #     - name: ping webserver
+    #       win_ping:
+    #       register: result
+#
+    # - name: adding DNS record
+    #   vars:
+    #     forward_zone: ansible.test.com
+    
+    #   win_shell: "dnscmd  . /recordadd {{ forward_zone }} {{ item.Server_name }} A {{ item.IP_add }}"
+    #   retries: 3
+    #   delay: 3
+    #   register: result
+    #   until: ("DNS_ERROR_RECORD_ALREADY_EXISTS" in result.stdout) or (result.rc == 0)
+    #   failed_when: ("DNS_ERROR_RECORD_ALREADY_EXISTS" not in result.stdout) and (result.rc != 0)
+    #   loop: "{{ server_list.list }}"
+     
+    - name: Splitting IP
+      vars:
+        ip_split: "{{ item.IP_add }}"
+
+      ansible.builtin.set_fact:
+        ip_sections: "{{ ip_split.split('.')|list}}"
+
+      ansible.builtin.set_fact:
+        dns_dev_zone_ptr: "{{ ip_sections[2] }}.{{ ip_sections[1] }}.{{ ip_sections[0] }}.in-addr.arpa"
+        
+      ansible.builtin.set_fact:
+        reverse_lookup_ip: "{{ ip_sections[0] }}.{{ ip_sections[1] }}.{{ ip_sections[2] }}"
+ 
+      loop: "{{ server_list.list }}"
+
+#
+        # - name: displaying connection testing
+        #   ansible.builtin.debug:
+        #     msg: "{{ result }}"
+
+        # - name: displaying connection testing
+        #   ansible.builtin.copy:
+        #     content: "{{ result.skip_reason }}"
+        #     dest: "/home/esilvania/Ansible/DNS_V3/files/connectivity_test.txt"
+        #     state: touch
+        #   delegate_to: localhost
+        #   when: "'unreachable' in result"
+#
+#
+        # - name: displaying connection testing
+        #   ansible.builtin.lineinfile:
+        #     dest: "/home/esilvania/Ansible/DNS_V3/files/connectivity_test.txt"
+        #     line: "{{ result.skip_reason }}"
+        #     state: present
+        #   delegate_to: localhost
+        #   when: "'unreachable' in result"
+#
+
