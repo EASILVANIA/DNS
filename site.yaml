@@ -13,7 +13,8 @@
         path: files/server_ip.csv
       register: server_list
       delegate_to: localhost
-  
+      
+#  
     # - name: Add AD/DNS Server to in-memory inventory
     #   add_host:
     #     host: "{{ item.IP_add}}"
@@ -26,7 +27,7 @@
     #     ansible_winrm_server_cert_validation: ignore
     #     no_log: true
     #   loop: "{{ server_list.list }}"
-
+#
 - name: webserver test connection
   hosts: dnsserver
   # become: true
@@ -40,17 +41,17 @@
     #       win_ping:
     #       register: result
 #
-    # - name: adding DNS record
-    #   vars:
-    #     forward_zone: ansible.test.com
+    - name: adding DNS record
+      vars:
+        forward_zone: ansible.test.com
     
-    #   win_shell: "dnscmd  . /recordadd {{ forward_zone }} {{ item.Server_name }} A {{ item.IP_add }}"
-    #   retries: 3
-    #   delay: 3
-    #   register: result
-    #   until: ("DNS_ERROR_RECORD_ALREADY_EXISTS" in result.stdout) or (result.rc == 0)
-    #   failed_when: ("DNS_ERROR_RECORD_ALREADY_EXISTS" not in result.stdout) and (result.rc != 0)
-    #   loop: "{{ server_list.list }}"
+      win_shell: "dnscmd  . /recordadd {{ forward_zone }} {{ item.Server_name }} A {{ item.IP_add }}"
+      retries: 3
+      delay: 3
+      register: result
+      until: ("DNS_ERROR_RECORD_ALREADY_EXISTS" in result.stdout) or (result.rc == 0)
+      failed_when: ("DNS_ERROR_RECORD_ALREADY_EXISTS" not in result.stdout) and (result.rc != 0)
+      loop: "{{ server_list.list }}"
      
     - name: Splitting IP
       vars:
